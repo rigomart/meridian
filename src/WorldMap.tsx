@@ -253,42 +253,9 @@ export default function WorldMap({
           onPointerUp={handlePointerUp}
         />
 
-        {hoveredBand !== null &&
-          hoveredBand !== tz1Offset &&
-          hoveredBand !== tz2Offset &&
-          (() => {
-            const city =
-              OFFSET_CITY_MAP[hoveredBand] ?? `UTC${hoveredBand >= 0 ? "+" : ""}${hoveredBand}`;
-            const localTime = wrapHour(refTime + (hoveredBand - refOffset));
-            const timeStr = formatTime(localTime);
-            const tooltipText = `${city} \u00b7 ${timeStr}`;
-            const centerLon = hoveredBand * 15;
-            const pt = projection([centerLon, -60]);
-            if (!pt) return null;
-            return (
-              <g className="pointer-events-none">
-                <rect
-                  x={pt[0] - 55}
-                  y={pt[1] - 12}
-                  width={110}
-                  height={24}
-                  rx={6}
-                  fill={COLORS.tooltipBg}
-                  stroke="rgba(255,255,255,0.15)"
-                  strokeWidth={0.5}
-                />
-                <text
-                  x={pt[0]}
-                  y={pt[1] + 4}
-                  textAnchor="middle"
-                  fill={COLORS.textPrimary}
-                  className="text-xs"
-                >
-                  {tooltipText}
-                </text>
-              </g>
-            );
-          })()}
+        {hoveredBand !== null && hoveredBand !== tz1Offset && hoveredBand !== tz2Offset && (
+          <BandTooltip offset={hoveredBand} refTime={refTime} refOffset={refOffset} />
+        )}
 
         {bandLabels.map(({ offset, x, label }) => (
           <text
@@ -308,5 +275,47 @@ export default function WorldMap({
         Approximate zones — actual timezone boundaries differ from these meridian-based bands
       </p>
     </div>
+  );
+}
+
+function BandTooltip({
+  offset,
+  refTime,
+  refOffset,
+}: {
+  offset: number;
+  refTime: number;
+  refOffset: number;
+}) {
+  const city = OFFSET_CITY_MAP[offset] ?? `UTC${offset >= 0 ? "+" : ""}${offset}`;
+  const localTime = wrapHour(refTime + (offset - refOffset));
+  const timeStr = formatTime(localTime);
+  const tooltipText = `${city} \u00b7 ${timeStr}`;
+  const centerLon = offset * 15;
+  const pt = projection([centerLon, -60]);
+  if (!pt) return null;
+
+  return (
+    <g className="pointer-events-none">
+      <rect
+        x={pt[0] - 55}
+        y={pt[1] - 12}
+        width={110}
+        height={24}
+        rx={6}
+        fill={COLORS.tooltipBg}
+        stroke="rgba(255,255,255,0.15)"
+        strokeWidth={0.5}
+      />
+      <text
+        x={pt[0]}
+        y={pt[1] + 4}
+        textAnchor="middle"
+        fill={COLORS.textPrimary}
+        className="text-xs"
+      >
+        {tooltipText}
+      </text>
+    </g>
   );
 }

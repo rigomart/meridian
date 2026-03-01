@@ -151,12 +151,12 @@ export default function TimezoneExplorer() {
   return (
     <div className="min-h-screen">
       <header className="flex items-center justify-between px-5 py-2 border-b border-b-zone-a/8">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-4">
           <MeridianLogo />
           <h1 className="font-serif text-2xl font-light leading-none text-text-primary">
             Meridian
           </h1>
-          <span className="text-xs uppercase tracking-wider text-text-secondary/30">
+          <span className="text-xs text-text-secondary/30">
             Timezone Explorer
           </span>
         </div>
