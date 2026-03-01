@@ -1,5 +1,5 @@
 import type { HourCellProps } from "./types";
-import { formatTime, wrapHour } from "./utils";
+import { formatTime, wrapHour } from "./time";
 
 export default function HourCell({ hour, cellW, color, currentHour }: HourCellProps) {
 	const wrappedHour = wrapHour(hour);

@@ -1,10 +1,10 @@
 import type { GeoPermissibleObjects } from "d3-geo";
 import { useEffect, useState } from "react";
 import DraggableBands from "./DraggableBands";
-import { WORLD_ATLAS_URL } from "./data";
+import { WORLD_ATLAS_URL } from "./constants";
+import { decodeTopo } from "./geo";
 import { findTimezoneByName, findTimezoneForOffset, getLocalTimezone, getOffsetHours } from "./timezones";
 import type { RefZone } from "./types";
-import { decodeTopo } from "./utils";
 import WorldMap from "./WorldMap";
 
 function getCurrentFractionalHour(): number {

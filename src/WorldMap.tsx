@@ -1,9 +1,10 @@
 import { type GeoPermissibleObjects, geoEquirectangular, geoGraticule, geoPath } from "d3-geo";
 import { useRef } from "react";
-import { COLORS, MAP_HEIGHT, MAP_WIDTH } from "./data";
+import { COLORS, MAP_HEIGHT, MAP_WIDTH } from "./constants";
+import { buildBandPolygon, getBandFill } from "./geo";
+import { formatTime, wrapHour } from "./time";
 import { OFFSET_CITY_MAP } from "./timezones";
 import type { WorldMapProps } from "./types";
-import { buildBandPolygon, formatTime, getBandFill, wrapHour } from "./utils";
 
 const projection = geoEquirectangular()
 	.scale(MAP_HEIGHT / Math.PI)
