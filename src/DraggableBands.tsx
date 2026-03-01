@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { TIMEZONE_ENTRIES } from "./data";
+import { COLORS, TIMEZONE_ENTRIES } from "./data";
 import HourCell from "./HourCell";
 import type { DraggableBandsProps } from "./types";
 import { formatTime, getAmPm, getDayIcon, getDayPhase, wrapHour } from "./utils";
 
 const VISIBLE_HOURS = 25;
 const TOTAL_CELLS = 72;
+
+const diamondStyle: React.CSSProperties = {
+	width: 12,
+	height: 12,
+	background: COLORS.zoneA,
+	borderRadius: 2,
+	transform: "rotate(45deg)",
+	boxShadow: "0 0 14px rgba(255,183,77,0.7)",
+	flexShrink: 0,
+};
 
 function ZoneRow({
 	label,
@@ -28,7 +38,7 @@ function ZoneRow({
 }) {
 	const timeStr = formatTime(time);
 	const ampm = getAmPm(time);
-	const icon = getDayIcon(getDayPhase(wrapHour(time)));
+	const icon = getDayIcon(getDayPhase(time));
 
 	return (
 		<div
@@ -43,7 +53,6 @@ function ZoneRow({
 					height: 22,
 					borderRadius: "50%",
 					border: `2px solid ${color}`,
-					fontFamily: "var(--font-mono)",
 					fontSize: 9,
 					fontWeight: 600,
 					color,
@@ -58,7 +67,6 @@ function ZoneRow({
 				value={offset}
 				onChange={(e) => onOffsetChange(Number(e.target.value))}
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 10,
 					padding: "3px 6px",
 					borderRadius: 4,
@@ -83,7 +91,6 @@ function ZoneRow({
 				type="button"
 				onClick={onSetRef}
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 8,
 					textTransform: "uppercase",
 					letterSpacing: "0.08em",
@@ -106,7 +113,6 @@ function ZoneRow({
 			{/* Time display */}
 			<span
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 14,
 					fontWeight: 600,
 					color,
@@ -138,7 +144,6 @@ function DiffRow({ timeDiff }: { timeDiff: number }) {
 		>
 			<span
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 9,
 					textTransform: "uppercase",
 					letterSpacing: "0.1em",
@@ -156,10 +161,9 @@ function DiffRow({ timeDiff }: { timeDiff: number }) {
 			/>
 			<span
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 11,
 					fontWeight: 500,
-					color: "#e8dcc8",
+					color: COLORS.textPrimary,
 				}}
 			>
 				{diffLabel}
@@ -193,7 +197,6 @@ export default function DraggableBands({
 	refZone,
 	onSetRef,
 	onOffsetChange,
-	timeDiff,
 }: DraggableBandsProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [containerWidth, setContainerWidth] = useState(800);
@@ -202,6 +205,8 @@ export default function DraggableBands({
 	const dragStartX = useRef(0);
 	const isDragging = useRef(false);
 	const totalDragDx = useRef(0);
+
+	const timeDiff = tz2Offset - tz1Offset;
 
 	useEffect(() => {
 		const el = containerRef.current;
@@ -274,7 +279,7 @@ export default function DraggableBands({
 				{/* Zone A row */}
 				<ZoneRow
 					label="A"
-					color="#ffb74d"
+					color={COLORS.zoneA}
 					offset={tz1Offset}
 					time={tzATime}
 					isRef={refZone === "A"}
@@ -293,7 +298,7 @@ export default function DraggableBands({
 							willChange: "transform",
 						}}
 					>
-						{buildCells(tzATime, cellW, "#ffb74d")}
+						{buildCells(tzATime, cellW, COLORS.zoneA)}
 					</div>
 				</div>
 
@@ -310,14 +315,14 @@ export default function DraggableBands({
 							willChange: "transform",
 						}}
 					>
-						{buildCells(tzBTime, cellW, "#4fc3f7")}
+						{buildCells(tzBTime, cellW, COLORS.zoneB)}
 					</div>
 				</div>
 
 				{/* Zone B row */}
 				<ZoneRow
 					label="B"
-					color="#4fc3f7"
+					color={COLORS.zoneB}
 					offset={tz2Offset}
 					time={tzBTime}
 					isRef={refZone === "B"}
@@ -341,36 +346,16 @@ export default function DraggableBands({
 						zIndex: 10,
 					}}
 				>
-					<div
-						style={{
-							width: 12,
-							height: 12,
-							background: "#ffb74d",
-							borderRadius: 2,
-							transform: "rotate(45deg)",
-							boxShadow: "0 0 14px rgba(255,183,77,0.7)",
-							flexShrink: 0,
-						}}
-					/>
+					<div style={diamondStyle} />
 					<div
 						style={{
 							width: 2,
 							flex: 1,
-							background: "#ffb74d",
+							background: COLORS.zoneA,
 							boxShadow: "0 0 10px rgba(255,183,77,0.5)",
 						}}
 					/>
-					<div
-						style={{
-							width: 12,
-							height: 12,
-							background: "#ffb74d",
-							borderRadius: 2,
-							transform: "rotate(45deg)",
-							boxShadow: "0 0 14px rgba(255,183,77,0.7)",
-							flexShrink: 0,
-						}}
-					/>
+					<div style={diamondStyle} />
 				</div>
 			</div>
 
@@ -378,7 +363,6 @@ export default function DraggableBands({
 			<p
 				className="mt-2 text-center"
 				style={{
-					fontFamily: "var(--font-mono)",
 					fontSize: 9,
 					color: dragging ? "rgba(255,183,77,0.5)" : "rgba(200,205,216,0.3)",
 					letterSpacing: "0.06em",

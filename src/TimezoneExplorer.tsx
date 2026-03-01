@@ -1,7 +1,7 @@
 import type { GeoPermissibleObjects } from "d3-geo";
 import { useEffect, useState } from "react";
 import DraggableBands from "./DraggableBands";
-import { WORLD_ATLAS_URL } from "./data";
+import { COLORS, WORLD_ATLAS_URL } from "./data";
 import type { ClickTarget, RefZone } from "./types";
 import { decodeTopo } from "./utils";
 import WorldMap from "./WorldMap";
@@ -28,15 +28,25 @@ export default function TimezoneExplorer() {
 	const refOffset = refZone === "A" ? tz1Offset : tz2Offset;
 	const tzATime = refZone === "A" ? refTime : refTime + (tz1Offset - refOffset);
 	const tzBTime = refZone === "B" ? refTime : refTime + (tz2Offset - refOffset);
-	const timeDiff = tz2Offset - tz1Offset;
 
 	useEffect(() => {
-		fetch(WORLD_ATLAS_URL)
-			.then((r) => r.json())
+		const controller = new AbortController();
+		fetch(WORLD_ATLAS_URL, { signal: controller.signal })
+			.then((r) => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`);
+				return r.json();
+			})
 			.then((topo) => {
 				setGeoData(decodeTopo(topo));
 				setLoading(false);
+			})
+			.catch((err) => {
+				if (err.name !== "AbortError") {
+					console.error("Failed to load map data:", err);
+					setLoading(false);
+				}
 			});
+		return () => controller.abort();
 	}, []);
 
 	function handleBandClick(offset: number) {
@@ -73,7 +83,7 @@ export default function TimezoneExplorer() {
 							fontFamily: "var(--font-serif)",
 							fontSize: 38,
 							fontWeight: 300,
-							color: "#e8dcc8",
+							color: COLORS.textPrimary,
 							lineHeight: 1,
 							margin: 0,
 						}}
@@ -83,7 +93,6 @@ export default function TimezoneExplorer() {
 					<p
 						className="mt-1"
 						style={{
-							fontFamily: "var(--font-mono)",
 							fontSize: 13,
 							textTransform: "uppercase",
 							letterSpacing: "0.12em",
@@ -96,7 +105,6 @@ export default function TimezoneExplorer() {
 				</div>
 				<p
 					style={{
-						fontFamily: "var(--font-mono)",
 						fontSize: 12,
 						color: "rgba(200,205,216,0.35)",
 						margin: 0,
@@ -112,13 +120,11 @@ export default function TimezoneExplorer() {
 					tzATime={tzATime}
 					tzBTime={tzBTime}
 					onTimeChange={handleTimeChange}
-					refOffset={refOffset}
 					tz1Offset={tz1Offset}
 					tz2Offset={tz2Offset}
 					refZone={refZone}
 					onSetRef={setRefZone}
 					onOffsetChange={handleOffsetChange}
-					timeDiff={timeDiff}
 				/>
 			</div>
 

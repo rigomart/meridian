@@ -8,22 +8,27 @@ const projection = geoNaturalEarth1()
 	.translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
 const path = geoPath(projection);
-const graticule = geoGraticule().step([15, 15]);
 
-const sphere: GeoPermissibleObjects = { type: "Sphere" };
-const equator: GeoJSON.Feature<GeoJSON.LineString> = {
-	type: "Feature",
-	properties: {},
-	geometry: {
-		type: "LineString",
-		coordinates: [
-			[-180, 0],
-			[180, 0],
-		],
-	},
-};
+// Precompute static paths that never change
+const spherePath = path({ type: "Sphere" } as GeoPermissibleObjects) ?? "";
+const graticulePath = path(geoGraticule().step([15, 15])()) ?? "";
+const equatorPath =
+	path({
+		type: "Feature",
+		properties: {},
+		geometry: {
+			type: "LineString",
+			coordinates: [
+				[-180, 0],
+				[180, 0],
+			],
+		},
+	}) ?? "";
 
-const bandOffsets = Array.from({ length: 25 }, (_, i) => i - 12);
+const bandData = Array.from({ length: 25 }, (_, i) => {
+	const offset = i - 12;
+	return { offset, polygon: buildBandPolygon(offset), d: path(buildBandPolygon(offset)) ?? "" };
+});
 
 function ZoneMarker({ offset, label, color }: { offset: number; label: string; color: string }) {
 	const centerLon = offset * 15;
@@ -53,11 +58,7 @@ function ZoneMarker({ offset, label, color }: { offset: number; label: string; c
 				y={labelPt[1]}
 				textAnchor="middle"
 				fill={color}
-				style={{
-					fontFamily: "var(--font-mono)",
-					fontSize: "10px",
-					fontWeight: 500,
-				}}
+				style={{ fontSize: "10px", fontWeight: 500 }}
 			>
 				{label}
 			</text>
@@ -88,7 +89,6 @@ export default function WorldMap({
 					borderRadius: 8,
 					border: "1px solid rgba(255,183,77,0.06)",
 					color: "rgba(200,205,216,0.4)",
-					fontFamily: "var(--font-mono)",
 					fontSize: 13,
 					letterSpacing: "0.08em",
 				}}
@@ -128,23 +128,12 @@ export default function WorldMap({
 					</filter>
 				</defs>
 
-				{/* Background with radial glow */}
 				<rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#mapGlow)" />
-
-				{/* Sphere outline */}
-				<path d={path(sphere) ?? ""} fill="none" stroke="rgba(255,183,77,0.12)" strokeWidth={1} />
-
-				{/* Graticule */}
-				<path
-					d={path(graticule()) ?? ""}
-					fill="none"
-					stroke="rgba(200,210,230,0.06)"
-					strokeWidth={0.5}
-				/>
+				<path d={spherePath} fill="none" stroke="rgba(255,183,77,0.12)" strokeWidth={1} />
+				<path d={graticulePath} fill="none" stroke="rgba(200,210,230,0.06)" strokeWidth={0.5} />
 
 				{/* Timezone bands */}
-				{bandOffsets.map((offset) => {
-					const band = buildBandPolygon(offset);
+				{bandData.map(({ offset, d }) => {
 					const isSelectedA = offset === tz1Offset;
 					const isSelectedB = offset === tz2Offset;
 					const isSelected = isSelectedA || isSelectedB;
@@ -167,7 +156,7 @@ export default function WorldMap({
 					return (
 						<path
 							key={offset}
-							d={path(band) ?? ""}
+							d={d}
 							fill={fill}
 							stroke={stroke}
 							strokeWidth={strokeWidth}
@@ -195,7 +184,7 @@ export default function WorldMap({
 
 				{/* Equator */}
 				<path
-					d={path(equator) ?? ""}
+					d={equatorPath}
 					fill="none"
 					stroke="rgba(255,183,77,0.1)"
 					strokeWidth={1}
@@ -215,7 +204,6 @@ export default function WorldMap({
 					fill={nextColor}
 					opacity={0.5}
 					style={{
-						fontFamily: "var(--font-mono)",
 						fontSize: "9px",
 						letterSpacing: "0.1em",
 						textTransform: "uppercase",
@@ -253,11 +241,8 @@ export default function WorldMap({
 									x={pt[0]}
 									y={pt[1] + 4}
 									textAnchor="middle"
-									fill="#e8dcc8"
-									style={{
-										fontFamily: "var(--font-mono)",
-										fontSize: "10px",
-									}}
+									fill={COLORS.textPrimary}
+									style={{ fontSize: "10px" }}
 								>
 									{tooltipText}
 								</text>

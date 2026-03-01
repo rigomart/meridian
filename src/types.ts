@@ -26,13 +26,11 @@ export interface DraggableBandsProps {
 	tzATime: number;
 	tzBTime: number;
 	onTimeChange: (deltaHours: number) => void;
-	refOffset: number;
 	tz1Offset: number;
 	tz2Offset: number;
 	refZone: RefZone;
 	onSetRef: (zone: RefZone) => void;
 	onOffsetChange: (zone: "A" | "B", offset: number) => void;
-	timeDiff: number;
 }
 
 export interface HourCellProps {
