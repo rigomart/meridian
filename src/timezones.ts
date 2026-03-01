@@ -32,7 +32,7 @@ export function getOffsetHours(tz: TimeZone): number {
 	return tz.currentTimeOffsetInMinutes / 60;
 }
 
-function formatOffsetStr(hours: number): string {
+export function formatOffsetStr(hours: number): string {
 	const sign = hours >= 0 ? "+" : "-";
 	const abs = Math.abs(hours);
 	const h = Math.floor(abs);
@@ -51,9 +51,19 @@ export function findTimezoneForOffset(offset: number): TimeZone | undefined {
 }
 
 export function findTimezoneByName(name: string): TimeZone | undefined {
+	const direct = ALL_TIMEZONES.find((tz) => tz.name === name);
+	if (direct) return direct;
+
+	const raw = RAW_TIMEZONES.find((tz) => tz.name === name || tz.group.includes(name));
+	if (!raw) return undefined;
+
+	// Return the equivalent entry from ALL_TIMEZONES so the reference matches
 	return (
-		ALL_TIMEZONES.find((tz) => tz.name === name) ??
-		RAW_TIMEZONES.find((tz) => tz.name === name || tz.group.includes(name))
+		ALL_TIMEZONES.find(
+			(tz) =>
+				tz.alternativeName === raw.alternativeName &&
+				tz.currentTimeOffsetInMinutes === raw.currentTimeOffsetInMinutes,
+		) ?? raw
 	);
 }
 

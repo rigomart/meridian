@@ -21,7 +21,7 @@ function initLocalTimezone(): { name: string; offset: number } {
 	const local = getLocalTimezone();
 	if (local) return { name: local.name, offset: getOffsetHours(local) };
 	const offset = -(new Date().getTimezoneOffset() / 60);
-	return { name: "Etc/UTC", offset };
+	return { name: "Africa/Abidjan", offset };
 }
 
 export default function TimezoneExplorer() {
@@ -32,7 +32,7 @@ export default function TimezoneExplorer() {
 	const [tz1Offset, setTz1Offset] = useState(localInit.offset);
 	const [tz2Offset, setTz2Offset] = useState(0);
 	const [tz1Name, setTz1Name] = useState(localInit.name);
-	const [tz2Name, setTz2Name] = useState("Etc/UTC");
+	const [tz2Name, setTz2Name] = useState("Africa/Abidjan");
 
 	const [refTime, setRefTime] = useState(getCurrentFractionalHour);
 	const [refZone, setRefZone] = useState<RefZone>("A");
