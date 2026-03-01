@@ -47,9 +47,7 @@ export function formatTzLabel(tz: TimeZone): string {
 }
 
 export function findTimezoneForOffset(offset: number): TimeZone | undefined {
-	return ALL_TIMEZONES.find(
-		(tz) => tz.currentTimeOffsetInMinutes === offset * 60,
-	);
+	return ALL_TIMEZONES.find((tz) => tz.currentTimeOffsetInMinutes === offset * 60);
 }
 
 export function findTimezoneByName(name: string): TimeZone | undefined {
@@ -61,7 +59,8 @@ export function findTimezoneByName(name: string): TimeZone | undefined {
 
 export function getLocalTimezone(): TimeZone | undefined {
 	const localIana = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	return findTimezoneByName(localIana) ?? ALL_TIMEZONES.find(
-		(tz) => tz.currentTimeOffsetInMinutes === -(new Date().getTimezoneOffset()),
+	return (
+		findTimezoneByName(localIana) ??
+		ALL_TIMEZONES.find((tz) => tz.currentTimeOffsetInMinutes === -new Date().getTimezoneOffset())
 	);
 }

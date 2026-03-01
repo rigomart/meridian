@@ -34,13 +34,15 @@ const bandData = Array.from({ length: 25 }, (_, i) => {
 	return { offset, polygon: buildBandPolygon(offset), d: path(buildBandPolygon(offset)) ?? "" };
 });
 
-const bandLabels = bandData.map(({ offset }) => {
-	const centerLon = offset * 15;
-	const pt = projection([centerLon, 0]);
-	if (!pt) return null;
-	const label = offset === 0 ? "UTC" : `${offset > 0 ? "+" : ""}${offset}`;
-	return { offset, x: pt[0], label };
-}).filter(Boolean) as { offset: number; x: number; label: string }[];
+const bandLabels = bandData
+	.map(({ offset }) => {
+		const centerLon = offset * 15;
+		const pt = projection([centerLon, 0]);
+		if (!pt) return null;
+		const label = offset === 0 ? "UTC" : `${offset > 0 ? "+" : ""}${offset}`;
+		return { offset, x: pt[0], label };
+	})
+	.filter(Boolean) as { offset: number; x: number; label: string }[];
 
 function ZoneMarker({
 	offset,

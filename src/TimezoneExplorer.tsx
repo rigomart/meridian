@@ -1,9 +1,14 @@
 import type { GeoPermissibleObjects } from "d3-geo";
 import { useEffect, useState } from "react";
-import DraggableBands from "./DraggableBands";
 import { WORLD_ATLAS_URL } from "./constants";
+import DraggableBands from "./DraggableBands";
 import { decodeTopo } from "./geo";
-import { findTimezoneByName, findTimezoneForOffset, getLocalTimezone, getOffsetHours } from "./timezones";
+import {
+	findTimezoneByName,
+	findTimezoneForOffset,
+	getLocalTimezone,
+	getOffsetHours,
+} from "./timezones";
 import type { RefZone } from "./types";
 import WorldMap from "./WorldMap";
 
@@ -108,7 +113,9 @@ export default function TimezoneExplorer() {
 			</header>
 
 			<div className="pt-4">
-				<p className="text-xs text-text-secondary/25 text-center mb-1.5">Drag zones on map · Drag bands to shift time</p>
+				<p className="text-xs text-text-secondary/25 text-center mb-1.5">
+					Drag zones on map · Drag bands to shift time
+				</p>
 				<DraggableBands
 					tzATime={tzATime}
 					tzBTime={tzBTime}
@@ -153,7 +160,15 @@ function MeridianLogo() {
 			<circle cx="16" cy="16" r="12.5" stroke="#e8dcc8" strokeWidth="1.5" />
 			<ellipse cx="16" cy="16" rx="5" ry="12.5" stroke="#e8dcc8" strokeWidth="1" opacity="0.3" />
 			<line x1="3.5" y1="16" x2="28.5" y2="16" stroke="#e8dcc8" strokeWidth="1" opacity="0.3" />
-			<line x1="16" y1="3.5" x2="16" y2="28.5" stroke="#ffb74d" strokeWidth="1.5" strokeLinecap="round" />
+			<line
+				x1="16"
+				y1="3.5"
+				x2="16"
+				y2="28.5"
+				stroke="#ffb74d"
+				strokeWidth="1.5"
+				strokeLinecap="round"
+			/>
 		</svg>
 	);
 }
