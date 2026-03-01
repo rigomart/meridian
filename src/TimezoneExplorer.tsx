@@ -88,7 +88,8 @@ export default function TimezoneExplorer() {
 	return (
 		<div className="min-h-screen">
 			<header className="flex items-center justify-between px-5 py-2 border-b border-b-zone-a/8">
-				<div className="flex items-baseline gap-3">
+				<div className="flex items-center gap-2.5">
+					<MeridianLogo />
 					<h1 className="font-serif text-2xl font-light leading-none text-text-primary">
 						Meridian
 					</h1>
@@ -96,10 +97,18 @@ export default function TimezoneExplorer() {
 						Timezone Explorer
 					</span>
 				</div>
-				<p className="text-xs text-text-secondary/25">Drag zones on map · Drag bands to scrub time</p>
+				<a
+					href="https://github.com/rigomart/meridian"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-xs text-text-secondary/25 hover:text-text-secondary/50 transition-colors"
+				>
+					GitHub
+				</a>
 			</header>
 
 			<div className="pt-4">
+				<p className="text-xs text-text-secondary/25 text-center mb-1.5">Drag zones on map · Drag bands to shift time</p>
 				<DraggableBands
 					tzATime={tzATime}
 					tzBTime={tzBTime}
@@ -128,5 +137,23 @@ export default function TimezoneExplorer() {
 				/>
 			</div>
 		</div>
+	);
+}
+
+function MeridianLogo() {
+	return (
+		<svg
+			width="22"
+			height="22"
+			viewBox="0 0 32 32"
+			fill="none"
+			aria-label="Meridian logo"
+			role="img"
+		>
+			<circle cx="16" cy="16" r="12.5" stroke="#e8dcc8" strokeWidth="1.5" />
+			<ellipse cx="16" cy="16" rx="5" ry="12.5" stroke="#e8dcc8" strokeWidth="1" opacity="0.3" />
+			<line x1="3.5" y1="16" x2="28.5" y2="16" stroke="#e8dcc8" strokeWidth="1" opacity="0.3" />
+			<line x1="16" y1="3.5" x2="16" y2="28.5" stroke="#ffb74d" strokeWidth="1.5" strokeLinecap="round" />
+		</svg>
 	);
 }

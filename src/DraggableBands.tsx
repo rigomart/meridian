@@ -175,7 +175,7 @@ export default function DraggableBands({
 					dragging ? "text-zone-a/50" : "text-text-secondary/30"
 				}`}
 			>
-				{dragging ? "Scrubbing..." : "Click or drag anywhere on the bands"}
+				{dragging ? "Shifting..." : "Click or drag anywhere on the bands"}
 			</p>
 		</div>
 	);
