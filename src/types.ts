@@ -3,11 +3,6 @@ import type { GeoPermissibleObjects } from "d3-geo";
 export type RefZone = "A" | "B";
 export type DayPhase = "day" | "dawn" | "dusk" | "night";
 
-export interface TimezoneEntry {
-	offset: number;
-	city: string;
-}
-
 export interface WorldMapProps {
 	geoData: GeoPermissibleObjects | null;
 	loading: boolean;
@@ -26,9 +21,11 @@ export interface DraggableBandsProps {
 	onTimeChange: (deltaHours: number) => void;
 	tz1Offset: number;
 	tz2Offset: number;
+	tz1Name: string;
+	tz2Name: string;
 	refZone: RefZone;
 	onSetRef: (zone: RefZone) => void;
-	onOffsetChange: (zone: "A" | "B", offset: number) => void;
+	onTimezoneChange: (zone: "A" | "B", ianaName: string) => void;
 }
 
 export interface HourCellProps {

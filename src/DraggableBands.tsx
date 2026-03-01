@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { COLORS, TIMEZONE_ENTRIES } from "./data";
+import { COLORS } from "./data";
 import HourCell from "./HourCell";
+import { ALL_TIMEZONES, formatTzLabel } from "./timezones";
 import type { DraggableBandsProps } from "./types";
 import { formatTime, getAmPm, getDayIcon, getDayPhase, wrapHour } from "./utils";
 
@@ -10,20 +11,20 @@ const TOTAL_CELLS = 72;
 function ZoneRow({
 	label,
 	color,
-	offset,
+	tzName,
 	time,
 	isRef,
 	onSetRef,
-	onOffsetChange,
+	onTimezoneChange,
 	position,
 }: {
 	label: string;
 	color: string;
-	offset: number;
+	tzName: string;
 	time: number;
 	isRef: boolean;
 	onSetRef: () => void;
-	onOffsetChange: (offset: number) => void;
+	onTimezoneChange: (ianaName: string) => void;
 	position: "top" | "bottom";
 }) {
 	const timeStr = formatTime(time);
@@ -43,15 +44,14 @@ function ZoneRow({
 			</div>
 
 			<select
-				value={offset}
-				onChange={(e) => onOffsetChange(Number(e.target.value))}
+				value={tzName}
+				onChange={(e) => onTimezoneChange(e.target.value)}
 				className="text-xs px-1.5 py-[3px] rounded border border-white/6 bg-bg-primary/80 outline-none cursor-pointer max-w-[180px]"
 				style={{ color }}
 			>
-				{TIMEZONE_ENTRIES.map((tz) => (
-					<option key={tz.offset} value={tz.offset}>
-						UTC{tz.offset >= 0 ? "+" : ""}
-						{tz.offset} {tz.city}
+				{ALL_TIMEZONES.map((tz) => (
+					<option key={tz.name} value={tz.name}>
+						{formatTzLabel(tz)}
 					</option>
 				))}
 			</select>
@@ -115,9 +115,11 @@ export default function DraggableBands({
 	onTimeChange,
 	tz1Offset,
 	tz2Offset,
+	tz1Name,
+	tz2Name,
 	refZone,
 	onSetRef,
-	onOffsetChange,
+	onTimezoneChange,
 }: DraggableBandsProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [containerWidth, setContainerWidth] = useState(800);
@@ -193,11 +195,11 @@ export default function DraggableBands({
 				<ZoneRow
 					label="A"
 					color={COLORS.zoneA}
-					offset={tz1Offset}
+					tzName={tz1Name}
 					time={tzATime}
 					isRef={refZone === "A"}
 					onSetRef={() => onSetRef("A")}
-					onOffsetChange={(o) => onOffsetChange("A", o)}
+					onTimezoneChange={(name) => onTimezoneChange("A", name)}
 					position="top"
 				/>
 
@@ -224,11 +226,11 @@ export default function DraggableBands({
 				<ZoneRow
 					label="B"
 					color={COLORS.zoneB}
-					offset={tz2Offset}
+					tzName={tz2Name}
 					time={tzBTime}
 					isRef={refZone === "B"}
 					onSetRef={() => onSetRef("B")}
-					onOffsetChange={(o) => onOffsetChange("B", o)}
+					onTimezoneChange={(name) => onTimezoneChange("B", name)}
 					position="bottom"
 				/>
 

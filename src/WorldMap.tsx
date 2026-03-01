@@ -1,6 +1,7 @@
 import { type GeoPermissibleObjects, geoEquirectangular, geoGraticule, geoPath } from "d3-geo";
 import { useRef } from "react";
-import { COLORS, MAP_HEIGHT, MAP_WIDTH, OFFSET_CITY_MAP } from "./data";
+import { COLORS, MAP_HEIGHT, MAP_WIDTH } from "./data";
+import { OFFSET_CITY_MAP } from "./timezones";
 import type { WorldMapProps } from "./types";
 import { buildBandPolygon, formatTime, getBandFill, wrapHour } from "./utils";
 
@@ -300,6 +301,9 @@ export default function WorldMap({
 					</text>
 				))}
 			</svg>
+			<p className="mt-1.5 text-center text-[10px] tracking-wide text-text-secondary/20">
+				Approximate zones — actual timezone boundaries differ from these meridian-based bands
+			</p>
 		</div>
 	);
 }
