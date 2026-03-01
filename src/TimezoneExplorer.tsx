@@ -1,5 +1,5 @@
 import type { GeoPermissibleObjects } from "d3-geo";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WORLD_ATLAS_URL } from "./constants";
 import DraggableBands from "./DraggableBands";
 import { decodeTopo } from "./geo";
@@ -24,23 +24,75 @@ function initLocalTimezone(): { name: string; offset: number } {
 	return { name: "Africa/Abidjan", offset };
 }
 
+function parseHash(): { a?: string; b?: string; ref?: RefZone } {
+	const hash = window.location.hash.slice(1);
+	if (!hash) return {};
+	const params = new URLSearchParams(hash);
+	const a = params.get("a") ?? undefined;
+	const b = params.get("b") ?? undefined;
+	const ref = params.get("ref");
+	return { a, b, ref: ref === "A" || ref === "B" ? ref : undefined };
+}
+
+function resolveInitialZone(
+	hashName: string | undefined,
+	fallback: { name: string; offset: number },
+): { name: string; offset: number } {
+	if (!hashName) return fallback;
+	const tz = findTimezoneByName(hashName);
+	if (!tz) return fallback;
+	return { name: tz.name, offset: getOffsetHours(tz) };
+}
+
 export default function TimezoneExplorer() {
 	const [geoData, setGeoData] = useState<GeoPermissibleObjects | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	const [localInit] = useState(initLocalTimezone);
-	const [tz1Offset, setTz1Offset] = useState(localInit.offset);
-	const [tz2Offset, setTz2Offset] = useState(0);
-	const [tz1Name, setTz1Name] = useState(localInit.name);
-	const [tz2Name, setTz2Name] = useState("Africa/Abidjan");
+	const [hashInit] = useState(parseHash);
+
+	const initA = resolveInitialZone(hashInit.a, localInit);
+	const initB = resolveInitialZone(hashInit.b, {
+		name: "Africa/Abidjan",
+		offset: 0,
+	});
+
+	const [tz1Offset, setTz1Offset] = useState(initA.offset);
+	const [tz2Offset, setTz2Offset] = useState(initB.offset);
+	const [tz1Name, setTz1Name] = useState(initA.name);
+	const [tz2Name, setTz2Name] = useState(initB.name);
 
 	const [refTime, setRefTime] = useState(getCurrentFractionalHour);
-	const [refZone, setRefZone] = useState<RefZone>("A");
+	const [refZone, setRefZone] = useState<RefZone>(hashInit.ref ?? "A");
+	const [isLive, setIsLive] = useState(true);
 	const [hoveredBand, setHoveredBand] = useState<number | null>(null);
 
 	const refOffset = refZone === "A" ? tz1Offset : tz2Offset;
 	const tzATime = refZone === "A" ? refTime : refTime + (tz1Offset - refOffset);
 	const tzBTime = refZone === "B" ? refTime : refTime + (tz2Offset - refOffset);
+
+	// Sync state → URL hash
+	const isInitialRender = useRef(true);
+	useEffect(() => {
+		if (isInitialRender.current) {
+			isInitialRender.current = false;
+			return;
+		}
+		const params = new URLSearchParams();
+		params.set("a", tz1Name);
+		params.set("b", tz2Name);
+		if (refZone !== "A") params.set("ref", refZone);
+		history.replaceState(null, "", `#${params.toString()}`);
+	}, [tz1Name, tz2Name, refZone]);
+
+	// Live clock tick
+	useEffect(() => {
+		if (!isLive) return;
+		const id = setInterval(() => {
+			setRefTime(getCurrentFractionalHour());
+		}, 60_000);
+		return () => clearInterval(id);
+	}, [isLive]);
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -63,7 +115,13 @@ export default function TimezoneExplorer() {
 	}, []);
 
 	function handleTimeChange(deltaHours: number) {
+		setIsLive(false);
 		setRefTime((prev) => prev + deltaHours);
+	}
+
+	function handleResetToNow() {
+		setRefTime(getCurrentFractionalHour());
+		setIsLive(true);
 	}
 
 	function handleTimezoneChange(zone: "A" | "B", ianaName: string) {
@@ -102,19 +160,31 @@ export default function TimezoneExplorer() {
 						Timezone Explorer
 					</span>
 				</div>
-				<a
-					href="https://github.com/rigomart/meridian"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-xs text-text-secondary/25 hover:text-text-secondary/50 transition-colors"
-				>
-					GitHub
-				</a>
+				<div className="flex items-center gap-3">
+					<CopyUrlButton />
+					<a
+						href="https://github.com/rigomart/meridian"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-xs text-text-secondary/25 hover:text-text-secondary/50 transition-colors"
+					>
+						GitHub
+					</a>
+				</div>
 			</header>
 
 			<div className="pt-4">
 				<p className="text-xs text-text-secondary/25 text-center mb-1.5">
 					Drag zones on map · Drag bands to shift time
+					{!isLive && (
+						<button
+							type="button"
+							onClick={handleResetToNow}
+							className="ml-2 text-zone-a/60 hover:text-zone-a transition-colors cursor-pointer"
+						>
+							· Reset to now
+						</button>
+					)}
 				</p>
 				<DraggableBands
 					tzATime={tzATime}
@@ -170,5 +240,27 @@ function MeridianLogo() {
 				strokeLinecap="round"
 			/>
 		</svg>
+	);
+}
+
+function CopyUrlButton() {
+	const [copied, setCopied] = useState(false);
+	const timeout = useRef<ReturnType<typeof setTimeout>>(null);
+
+	function handleCopy() {
+		navigator.clipboard.writeText(window.location.href);
+		setCopied(true);
+		if (timeout.current) clearTimeout(timeout.current);
+		timeout.current = setTimeout(() => setCopied(false), 2000);
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={handleCopy}
+			className="text-xs text-text-secondary/25 hover:text-text-secondary/50 transition-colors cursor-pointer"
+		>
+			{copied ? "Copied!" : "Share"}
+		</button>
 	);
 }
