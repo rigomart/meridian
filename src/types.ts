@@ -1,7 +1,6 @@
 import type { GeoPermissibleObjects } from "d3-geo";
 
 export type RefZone = "A" | "B";
-export type ClickTarget = 1 | 2;
 export type DayPhase = "day" | "dawn" | "dusk" | "night";
 
 export interface TimezoneEntry {
@@ -18,8 +17,7 @@ export interface WorldMapProps {
 	refOffset: number;
 	hoveredBand: number | null;
 	onHoverBand: (offset: number | null) => void;
-	onClickBand: (offset: number) => void;
-	nextClickTarget: ClickTarget;
+	onOffsetChange: (zone: "A" | "B", offset: number) => void;
 }
 
 export interface DraggableBandsProps {

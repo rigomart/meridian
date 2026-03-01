@@ -7,16 +7,6 @@ import { formatTime, getAmPm, getDayIcon, getDayPhase, wrapHour } from "./utils"
 const VISIBLE_HOURS = 25;
 const TOTAL_CELLS = 72;
 
-const diamondStyle: React.CSSProperties = {
-	width: 12,
-	height: 12,
-	background: COLORS.zoneA,
-	borderRadius: 2,
-	transform: "rotate(45deg)",
-	boxShadow: "0 0 14px rgba(255,183,77,0.7)",
-	flexShrink: 0,
-};
-
 function ZoneRow({
 	label,
 	color,
@@ -45,38 +35,18 @@ function ZoneRow({
 			className={`flex items-center gap-3 px-3 ${position === "top" ? "pb-1.5 pt-2.5" : "pb-2.5 pt-1.5"}`}
 			onPointerDown={(e) => e.stopPropagation()}
 		>
-			{/* Zone badge */}
 			<div
-				className="flex items-center justify-center"
-				style={{
-					width: 22,
-					height: 22,
-					borderRadius: "50%",
-					border: `2px solid ${color}`,
-					fontSize: 9,
-					fontWeight: 600,
-					color,
-					flexShrink: 0,
-				}}
+				className="flex items-center justify-center size-[22px] rounded-full text-xs font-semibold shrink-0"
+				style={{ border: `2px solid ${color}`, color }}
 			>
 				{label}
 			</div>
 
-			{/* Compact dropdown */}
 			<select
 				value={offset}
 				onChange={(e) => onOffsetChange(Number(e.target.value))}
-				style={{
-					fontSize: 10,
-					padding: "3px 6px",
-					borderRadius: 4,
-					border: "1px solid rgba(255,255,255,0.06)",
-					background: "rgba(8,12,20,0.8)",
-					color,
-					outline: "none",
-					cursor: "pointer",
-					maxWidth: 180,
-				}}
+				className="text-xs px-1.5 py-[3px] rounded border border-white/6 bg-bg-primary/80 outline-none cursor-pointer max-w-[180px]"
+				style={{ color }}
 			>
 				{TIMEZONE_ENTRIES.map((tz) => (
 					<option key={tz.offset} value={tz.offset}>
@@ -86,42 +56,24 @@ function ZoneRow({
 				))}
 			</select>
 
-			{/* Ref toggle */}
 			<button
 				type="button"
 				onClick={onSetRef}
+				className="text-xs uppercase tracking-normal px-[7px] py-0.5 rounded-[3px] cursor-pointer whitespace-nowrap shrink-0"
 				style={{
-					fontSize: 8,
-					textTransform: "uppercase",
-					letterSpacing: "0.08em",
-					padding: "2px 7px",
-					borderRadius: 3,
 					border: `1px solid ${isRef ? `${color}55` : "rgba(255,255,255,0.06)"}`,
 					background: isRef ? `${color}22` : "transparent",
 					color: isRef ? color : "rgba(200,205,216,0.35)",
-					cursor: "pointer",
-					whiteSpace: "nowrap",
-					flexShrink: 0,
 				}}
 			>
-				{isRef ? "✦ Ref" : "Ref"}
+				{isRef ? "\u2726 Ref" : "Ref"}
 			</button>
 
-			{/* Spacer */}
 			<div className="flex-1" />
 
-			{/* Time display */}
-			<span
-				style={{
-					fontSize: 14,
-					fontWeight: 600,
-					color,
-					whiteSpace: "nowrap",
-					flexShrink: 0,
-				}}
-			>
-				{timeStr} <span style={{ fontSize: 10, opacity: 0.5 }}>{ampm}</span>{" "}
-				<span style={{ fontSize: 12 }}>{icon}</span>
+			<span className="text-base font-semibold whitespace-nowrap shrink-0" style={{ color }}>
+				{timeStr} <span className="text-xs opacity-50">{ampm}</span>{" "}
+				<span className="text-xs">{icon}</span>
 			</span>
 		</div>
 	);
@@ -133,41 +85,10 @@ function DiffRow({ timeDiff }: { timeDiff: number }) {
 		timeDiff === 0 ? "Same time" : `${diffAbs}h ${timeDiff > 0 ? "ahead" : "behind"}`;
 
 	return (
-		<div
-			className="flex items-center justify-center gap-3"
-			style={{
-				padding: "3px 0",
-				borderTop: "1px solid rgba(255,255,255,0.03)",
-				borderBottom: "1px solid rgba(255,255,255,0.03)",
-				background: "rgba(8,12,20,0.2)",
-			}}
-		>
-			<span
-				style={{
-					fontSize: 9,
-					textTransform: "uppercase",
-					letterSpacing: "0.1em",
-					color: "rgba(200,205,216,0.3)",
-				}}
-			>
-				Difference
-			</span>
-			<div
-				style={{
-					width: 20,
-					height: 1,
-					background: "rgba(255,183,77,0.15)",
-				}}
-			/>
-			<span
-				style={{
-					fontSize: 11,
-					fontWeight: 500,
-					color: COLORS.textPrimary,
-				}}
-			>
-				{diffLabel}
-			</span>
+		<div className="flex items-center justify-center gap-3 py-[3px] border-y border-y-white/3 bg-bg-primary/20">
+			<span className="text-xs uppercase tracking-wide text-text-secondary/30">Difference</span>
+			<div className="w-5 h-px bg-zone-a/15" />
+			<span className="text-sm font-medium text-text-primary">{diffLabel}</span>
 		</div>
 	);
 }
@@ -262,21 +183,13 @@ export default function DraggableBands({
 		<div>
 			<div
 				ref={containerRef}
-				style={{
-					position: "relative",
-					borderRadius: 8,
-					overflow: "hidden",
-					background: "rgba(8,12,20,0.3)",
-					border: `1px solid ${dragging ? "rgba(255,183,77,0.15)" : "rgba(255,255,255,0.04)"}`,
-					cursor: dragging ? "grabbing" : "grab",
-					touchAction: "none",
-					userSelect: "none",
-				}}
+				className={`relative overflow-hidden bg-bg-primary/30 touch-none select-none border-y ${
+					dragging ? "cursor-grabbing border-y-zone-a/15" : "cursor-grab border-y-white/4"
+				}`}
 				onPointerDown={handlePointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
 			>
-				{/* Zone A row */}
 				<ZoneRow
 					label="A"
 					color={COLORS.zoneA}
@@ -288,38 +201,26 @@ export default function DraggableBands({
 					position="top"
 				/>
 
-				{/* Strip A */}
-				<div style={{ overflow: "hidden" }}>
+				<div className="overflow-hidden">
 					<div
-						style={{
-							display: "flex",
-							width: stripWidth,
-							transform: `translateX(${txA}px)`,
-							willChange: "transform",
-						}}
+						className="flex will-change-transform"
+						style={{ width: stripWidth, transform: `translateX(${txA}px)` }}
 					>
 						{buildCells(tzATime, cellW, COLORS.zoneA)}
 					</div>
 				</div>
 
-				{/* Difference row */}
 				<DiffRow timeDiff={timeDiff} />
 
-				{/* Strip B */}
-				<div style={{ overflow: "hidden" }}>
+				<div className="overflow-hidden">
 					<div
-						style={{
-							display: "flex",
-							width: stripWidth,
-							transform: `translateX(${txB}px)`,
-							willChange: "transform",
-						}}
+						className="flex will-change-transform"
+						style={{ width: stripWidth, transform: `translateX(${txB}px)` }}
 					>
 						{buildCells(tzBTime, cellW, COLORS.zoneB)}
 					</div>
 				</div>
 
-				{/* Zone B row */}
 				<ZoneRow
 					label="B"
 					color={COLORS.zoneB}
@@ -331,42 +232,17 @@ export default function DraggableBands({
 					position="bottom"
 				/>
 
-				{/* Fixed Needle */}
-				<div
-					style={{
-						position: "absolute",
-						left: "50%",
-						top: 0,
-						bottom: 0,
-						transform: "translateX(-50%)",
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "center",
-						pointerEvents: "none",
-						zIndex: 10,
-					}}
-				>
-					<div style={diamondStyle} />
-					<div
-						style={{
-							width: 2,
-							flex: 1,
-							background: COLORS.zoneA,
-							boxShadow: "0 0 10px rgba(255,183,77,0.5)",
-						}}
-					/>
-					<div style={diamondStyle} />
+				<div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 flex flex-col items-center pointer-events-none z-10">
+					<div className="size-3 bg-zone-a rounded-[2px] rotate-45 shadow-glow shrink-0" />
+					<div className="w-0.5 flex-1 bg-zone-a shadow-glow-sm" />
+					<div className="size-3 bg-zone-a rounded-[2px] rotate-45 shadow-glow shrink-0" />
 				</div>
 			</div>
 
-			{/* Hint text */}
 			<p
-				className="mt-2 text-center"
-				style={{
-					fontSize: 9,
-					color: dragging ? "rgba(255,183,77,0.5)" : "rgba(200,205,216,0.3)",
-					letterSpacing: "0.06em",
-				}}
+				className={`mt-2 text-center text-xs tracking-tight ${
+					dragging ? "text-zone-a/50" : "text-text-secondary/30"
+				}`}
 			>
 				{dragging ? "Scrubbing..." : "Click or drag anywhere on the bands"}
 			</p>

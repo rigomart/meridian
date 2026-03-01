@@ -6,11 +6,29 @@
 	--color-bg-tertiary: #0f1525;
 	--color-text-primary: #e8dcc8;
 	--color-text-secondary: #c8cdd8;
+	--color-text-inverse: #0a0e17;
 	--color-zone-a: #ffb74d;
 	--color-zone-b: #4fc3f7;
 	--color-panel: rgba(16, 22, 35, 0.6);
+	--color-geo: #c8d2e6;
+	--color-hour-teal: #2d7864;
+	--color-hour-night: #0f1423;
+	--color-band-day: rgba(255, 213, 79, 0.08);
+	--color-band-dawn: rgba(255, 152, 67, 0.06);
+	--color-band-dusk: rgba(255, 111, 67, 0.06);
+	--color-band-night: rgba(30, 40, 70, 0.15);
+	--color-tooltip-bg: rgba(10, 14, 23, 0.92);
+
 	--font-serif: "Cormorant Garamond", serif;
 	--font-mono: "JetBrains Mono", monospace;
+
+	--tracking-tight: 0.06em;
+	--tracking-normal: 0.08em;
+	--tracking-wide: 0.1em;
+	--tracking-wider: 0.12em;
+
+	--shadow-glow: 0 0 14px rgba(255, 183, 77, 0.7);
+	--shadow-glow-sm: 0 0 10px rgba(255, 183, 77, 0.5);
 }
 
 html,

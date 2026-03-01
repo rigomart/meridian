@@ -1,8 +1,8 @@
 import type { GeoPermissibleObjects } from "d3-geo";
 import { useEffect, useState } from "react";
 import DraggableBands from "./DraggableBands";
-import { COLORS, WORLD_ATLAS_URL } from "./data";
-import type { ClickTarget, RefZone } from "./types";
+import { WORLD_ATLAS_URL } from "./data";
+import type { RefZone } from "./types";
 import { decodeTopo } from "./utils";
 import WorldMap from "./WorldMap";
 
@@ -23,7 +23,6 @@ export default function TimezoneExplorer() {
 	const [refTime, setRefTime] = useState(getCurrentFractionalHour);
 	const [refZone, setRefZone] = useState<RefZone>("A");
 	const [hoveredBand, setHoveredBand] = useState<number | null>(null);
-	const [nextClickTarget, setNextClickTarget] = useState<ClickTarget>(1);
 
 	const refOffset = refZone === "A" ? tz1Offset : tz2Offset;
 	const tzATime = refZone === "A" ? refTime : refTime + (tz1Offset - refOffset);
@@ -49,16 +48,6 @@ export default function TimezoneExplorer() {
 		return () => controller.abort();
 	}, []);
 
-	function handleBandClick(offset: number) {
-		if (nextClickTarget === 1) {
-			setTz1Offset(offset);
-			setNextClickTarget(2);
-		} else {
-			setTz2Offset(offset);
-			setNextClickTarget(1);
-		}
-	}
-
 	function handleTimeChange(deltaHours: number) {
 		setRefTime((prev) => prev + deltaHours);
 	}
@@ -70,52 +59,19 @@ export default function TimezoneExplorer() {
 
 	return (
 		<div className="min-h-screen">
-			{/* Header */}
-			<header
-				className="flex items-end justify-between px-8 py-5"
-				style={{
-					borderBottom: "1px solid rgba(255,183,77,0.08)",
-				}}
-			>
-				<div>
-					<h1
-						style={{
-							fontFamily: "var(--font-serif)",
-							fontSize: 38,
-							fontWeight: 300,
-							color: COLORS.textPrimary,
-							lineHeight: 1,
-							margin: 0,
-						}}
-					>
+			<header className="flex items-center justify-between px-5 py-2 border-b border-b-zone-a/8">
+				<div className="flex items-baseline gap-3">
+					<h1 className="font-serif text-2xl font-light leading-none text-text-primary">
 						Meridian
 					</h1>
-					<p
-						className="mt-1"
-						style={{
-							fontSize: 13,
-							textTransform: "uppercase",
-							letterSpacing: "0.12em",
-							color: "rgba(200,205,216,0.4)",
-							margin: 0,
-						}}
-					>
+					<span className="text-xs uppercase tracking-wider text-text-secondary/30">
 						Timezone Explorer
-					</p>
+					</span>
 				</div>
-				<p
-					style={{
-						fontSize: 12,
-						color: "rgba(200,205,216,0.35)",
-						margin: 0,
-					}}
-				>
-					Click zones on map · Drag bands to compare
-				</p>
+				<p className="text-xs text-text-secondary/25">Drag zones on map · Drag bands to scrub time</p>
 			</header>
 
-			{/* Draggable Bands — primary interaction */}
-			<div className="mx-auto" style={{ maxWidth: 1000, padding: "24px 20px 0" }}>
+			<div className="pt-4">
 				<DraggableBands
 					tzATime={tzATime}
 					tzBTime={tzBTime}
@@ -128,7 +84,6 @@ export default function TimezoneExplorer() {
 				/>
 			</div>
 
-			{/* World Map */}
 			<div className="py-5">
 				<WorldMap
 					geoData={geoData}
@@ -139,8 +94,7 @@ export default function TimezoneExplorer() {
 					refOffset={refOffset}
 					hoveredBand={hoveredBand}
 					onHoverBand={setHoveredBand}
-					onClickBand={handleBandClick}
-					nextClickTarget={nextClickTarget}
+					onOffsetChange={handleOffsetChange}
 				/>
 			</div>
 		</div>

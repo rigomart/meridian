@@ -1,4 +1,5 @@
 import type { GeoPermissibleObjects } from "d3-geo";
+import { BAND_FILLS } from "./data";
 import type { DayPhase } from "./types";
 
 interface TopoGeometry {
@@ -137,14 +138,5 @@ export function buildBandPolygon(offset: number): GeoJSON.Feature<GeoJSON.Polygo
 export function getBandFill(offset: number, refTime: number, refOffset: number): string {
 	const localHour = wrapHour(refTime + (offset - refOffset));
 	const phase = getDayPhase(localHour);
-	switch (phase) {
-		case "day":
-			return "rgba(255,213,79,0.08)";
-		case "dawn":
-			return "rgba(255,152,67,0.06)";
-		case "dusk":
-			return "rgba(255,111,67,0.06)";
-		case "night":
-			return "rgba(30,40,70,0.15)";
-	}
+	return BAND_FILLS[phase];
 }

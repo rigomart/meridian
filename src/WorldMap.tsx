@@ -1,15 +1,15 @@
-import { type GeoPermissibleObjects, geoGraticule, geoNaturalEarth1, geoPath } from "d3-geo";
+import { type GeoPermissibleObjects, geoEquirectangular, geoGraticule, geoPath } from "d3-geo";
+import { useRef } from "react";
 import { COLORS, MAP_HEIGHT, MAP_WIDTH, OFFSET_CITY_MAP } from "./data";
 import type { WorldMapProps } from "./types";
 import { buildBandPolygon, formatTime, getBandFill, wrapHour } from "./utils";
 
-const projection = geoNaturalEarth1()
-	.scale(153)
+const projection = geoEquirectangular()
+	.scale(MAP_HEIGHT / Math.PI)
 	.translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
 const path = geoPath(projection);
 
-// Precompute static paths that never change
 const spherePath = path({ type: "Sphere" } as GeoPermissibleObjects) ?? "";
 const graticulePath = path(geoGraticule().step([15, 15])()) ?? "";
 const equatorPath =
@@ -25,12 +25,36 @@ const equatorPath =
 		},
 	}) ?? "";
 
+const LABEL_ROW_HEIGHT = 24;
+
 const bandData = Array.from({ length: 25 }, (_, i) => {
 	const offset = i - 12;
 	return { offset, polygon: buildBandPolygon(offset), d: path(buildBandPolygon(offset)) ?? "" };
 });
 
-function ZoneMarker({ offset, label, color }: { offset: number; label: string; color: string }) {
+const bandLabels = bandData.map(({ offset }) => {
+	const centerLon = offset * 15;
+	const pt = projection([centerLon, 0]);
+	if (!pt) return null;
+	const label = offset === 0 ? "UTC" : `${offset > 0 ? "+" : ""}${offset}`;
+	return { offset, x: pt[0], label };
+}).filter(Boolean) as { offset: number; x: number; label: string }[];
+
+function ZoneMarker({
+	offset,
+	label,
+	color,
+	onPointerDown,
+	onPointerMove,
+	onPointerUp,
+}: {
+	offset: number;
+	label: string;
+	color: string;
+	onPointerDown: (e: React.PointerEvent) => void;
+	onPointerMove: (e: React.PointerEvent) => void;
+	onPointerUp: (e: React.PointerEvent) => void;
+}) {
 	const centerLon = offset * 15;
 	const top = projection([centerLon, 80]);
 	const bottom = projection([centerLon, -80]);
@@ -39,7 +63,21 @@ function ZoneMarker({ offset, label, color }: { offset: number; label: string; c
 	if (!top || !bottom || !equatorPt || !labelPt) return null;
 
 	return (
-		<g>
+		<g
+			onPointerDown={onPointerDown}
+			onPointerMove={onPointerMove}
+			onPointerUp={onPointerUp}
+			className="cursor-grab active:cursor-grabbing touch-none"
+		>
+			{/* Invisible wider hit area for easier grabbing */}
+			<line
+				x1={top[0]}
+				y1={top[1]}
+				x2={bottom[0]}
+				y2={bottom[1]}
+				stroke="transparent"
+				strokeWidth={20}
+			/>
 			<line
 				x1={top[0]}
 				y1={top[1]}
@@ -50,6 +88,7 @@ function ZoneMarker({ offset, label, color }: { offset: number; label: string; c
 				strokeDasharray="6,4"
 				opacity={0.4}
 				filter="url(#glow)"
+				className="pointer-events-none"
 			/>
 			<circle cx={equatorPt[0]} cy={equatorPt[1]} r={6} fill={color} filter="url(#glow)" />
 			<circle cx={equatorPt[0]} cy={equatorPt[1]} r={3} fill="white" />
@@ -58,12 +97,24 @@ function ZoneMarker({ offset, label, color }: { offset: number; label: string; c
 				y={labelPt[1]}
 				textAnchor="middle"
 				fill={color}
-				style={{ fontSize: "10px", fontWeight: 500 }}
+				className="text-xs font-medium pointer-events-none"
 			>
 				{label}
 			</text>
 		</g>
 	);
+}
+
+function clientToOffset(svg: SVGSVGElement, clientX: number): number {
+	const pt = svg.createSVGPoint();
+	pt.x = clientX;
+	pt.y = MAP_HEIGHT / 2;
+	const ctm = svg.getScreenCTM();
+	if (!ctm) return 0;
+	const svgPt = pt.matrixTransform(ctm.inverse());
+	const coords = projection.invert!([svgPt.x, svgPt.y]);
+	if (!coords) return 0;
+	return Math.max(-12, Math.min(12, Math.round(coords[0] / 15)));
 }
 
 export default function WorldMap({
@@ -75,43 +126,40 @@ export default function WorldMap({
 	refOffset,
 	hoveredBand,
 	onHoverBand,
-	onClickBand,
-	nextClickTarget,
+	onOffsetChange,
 }: WorldMapProps) {
+	const svgRef = useRef<SVGSVGElement>(null);
+	const dragZone = useRef<"A" | "B" | null>(null);
+
 	if (loading || !geoData) {
 		return (
-			<div
-				className="mx-auto flex items-center justify-center"
-				style={{
-					maxWidth: 1000,
-					height: 480,
-					background: "rgba(8,12,20,0.6)",
-					borderRadius: 8,
-					border: "1px solid rgba(255,183,77,0.06)",
-					color: "rgba(200,205,216,0.4)",
-					fontSize: 13,
-					letterSpacing: "0.08em",
-				}}
-			>
+			<div className="mx-auto flex items-center justify-center max-w-5xl h-[480px] bg-bg-primary/60 rounded-lg border border-zone-a/6 text-text-secondary/40 text-sm tracking-normal">
 				LOADING MAP DATA...
 			</div>
 		);
 	}
 
-	const nextLabel = nextClickTarget === 1 ? "ZONE A" : "ZONE B";
-	const nextColor = nextClickTarget === 1 ? COLORS.zoneA : COLORS.zoneB;
+	function handlePointerDown(zone: "A" | "B", e: React.PointerEvent) {
+		dragZone.current = zone;
+		(e.currentTarget as Element).setPointerCapture(e.pointerId);
+	}
+
+	function handlePointerMove(e: React.PointerEvent) {
+		if (!dragZone.current || !svgRef.current) return;
+		const offset = clientToOffset(svgRef.current, e.clientX);
+		onOffsetChange(dragZone.current, offset);
+	}
+
+	function handlePointerUp() {
+		dragZone.current = null;
+	}
 
 	return (
-		<div className="mx-auto" style={{ maxWidth: 1000, padding: "0 20px" }}>
+		<div className="mx-auto max-w-7xl px-5">
 			<svg
-				viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
-				style={{
-					width: "100%",
-					height: "auto",
-					borderRadius: 8,
-					border: "1px solid rgba(255,183,77,0.06)",
-					background: "rgba(8,12,20,0.6)",
-				}}
+				ref={svgRef}
+				viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT + LABEL_ROW_HEIGHT}`}
+				className="w-full h-auto rounded-lg border border-zone-a/6 bg-bg-primary/60"
 			>
 				<title>Timezone world map</title>
 				<defs>
@@ -130,9 +178,8 @@ export default function WorldMap({
 
 				<rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#mapGlow)" />
 				<path d={spherePath} fill="none" stroke="rgba(255,183,77,0.12)" strokeWidth={1} />
-				<path d={graticulePath} fill="none" stroke="rgba(200,210,230,0.06)" strokeWidth={0.5} />
+				<path d={graticulePath} fill="none" stroke={`${COLORS.geo}10`} strokeWidth={0.5} />
 
-				{/* Timezone bands */}
 				{bandData.map(({ offset, d }) => {
 					const isSelectedA = offset === tz1Offset;
 					const isSelectedB = offset === tz2Offset;
@@ -144,7 +191,7 @@ export default function WorldMap({
 					let strokeWidth = 0;
 
 					if (isSelected) {
-						fill = "rgba(255,183,77,0.22)";
+						fill = "transparent";
 						stroke = isSelectedA ? COLORS.zoneA : COLORS.zoneB;
 						strokeWidth = 1.5;
 					}
@@ -161,58 +208,47 @@ export default function WorldMap({
 							stroke={stroke}
 							strokeWidth={strokeWidth}
 							tabIndex={-1}
-							style={{
-								cursor: "pointer",
-								transition: "fill 0.2s, stroke 0.2s",
-								outline: "none",
-							}}
+							className="transition-colors duration-200 outline-none"
 							onMouseEnter={() => onHoverBand(offset)}
 							onMouseLeave={() => onHoverBand(null)}
-							onClick={() => onClickBand(offset)}
 						/>
 					);
 				})}
 
-				{/* Country polygons */}
 				<path
 					d={path(geoData) ?? ""}
-					fill="rgba(200,210,230,0.07)"
-					stroke="rgba(200,210,230,0.12)"
+					fill={`${COLORS.geo}12`}
+					stroke={`${COLORS.geo}1f`}
 					strokeWidth={0.4}
-					style={{ pointerEvents: "none" }}
+					className="pointer-events-none"
 				/>
 
-				{/* Equator */}
 				<path
 					d={equatorPath}
 					fill="none"
 					stroke="rgba(255,183,77,0.1)"
 					strokeWidth={1}
 					strokeDasharray="4,4"
-					style={{ pointerEvents: "none" }}
+					className="pointer-events-none"
 				/>
 
-				{/* Zone markers */}
-				<ZoneMarker offset={tz1Offset} label="A" color={COLORS.zoneA} />
-				<ZoneMarker offset={tz2Offset} label="B" color={COLORS.zoneB} />
+				<ZoneMarker
+					offset={tz1Offset}
+					label="A"
+					color={COLORS.zoneA}
+					onPointerDown={(e) => handlePointerDown("A", e)}
+					onPointerMove={handlePointerMove}
+					onPointerUp={handlePointerUp}
+				/>
+				<ZoneMarker
+					offset={tz2Offset}
+					label="B"
+					color={COLORS.zoneB}
+					onPointerDown={(e) => handlePointerDown("B", e)}
+					onPointerMove={handlePointerMove}
+					onPointerUp={handlePointerUp}
+				/>
 
-				{/* Next click indicator */}
-				<text
-					x={MAP_WIDTH - 16}
-					y={24}
-					textAnchor="end"
-					fill={nextColor}
-					opacity={0.5}
-					style={{
-						fontSize: "9px",
-						letterSpacing: "0.1em",
-						textTransform: "uppercase",
-					}}
-				>
-					{`NEXT CLICK → ${nextLabel}`}
-				</text>
-
-				{/* Hover tooltip */}
 				{hoveredBand !== null &&
 					hoveredBand !== tz1Offset &&
 					hoveredBand !== tz2Offset &&
@@ -221,19 +257,19 @@ export default function WorldMap({
 							OFFSET_CITY_MAP[hoveredBand] ?? `UTC${hoveredBand >= 0 ? "+" : ""}${hoveredBand}`;
 						const localTime = wrapHour(refTime + (hoveredBand - refOffset));
 						const timeStr = formatTime(localTime);
-						const tooltipText = `${city} · ${timeStr}`;
+						const tooltipText = `${city} \u00b7 ${timeStr}`;
 						const centerLon = hoveredBand * 15;
 						const pt = projection([centerLon, -60]);
 						if (!pt) return null;
 						return (
-							<g style={{ pointerEvents: "none" }}>
+							<g className="pointer-events-none">
 								<rect
 									x={pt[0] - 55}
 									y={pt[1] - 12}
 									width={110}
 									height={24}
 									rx={6}
-									fill="rgba(10,14,23,0.92)"
+									fill={COLORS.tooltipBg}
 									stroke="rgba(255,255,255,0.15)"
 									strokeWidth={0.5}
 								/>
@@ -242,13 +278,27 @@ export default function WorldMap({
 									y={pt[1] + 4}
 									textAnchor="middle"
 									fill={COLORS.textPrimary}
-									style={{ fontSize: "10px" }}
+									className="text-xs"
 								>
 									{tooltipText}
 								</text>
 							</g>
 						);
 					})()}
+
+				{bandLabels.map(({ offset, x, label }) => (
+					<text
+						key={offset}
+						x={x}
+						y={MAP_HEIGHT + LABEL_ROW_HEIGHT / 2 + 4}
+						textAnchor="middle"
+						fill={COLORS.textSecondary}
+						opacity={offset === 0 ? 0.5 : 0.25}
+						className="text-xs pointer-events-none"
+					>
+						{label}
+					</text>
+				))}
 			</svg>
 		</div>
 	);
