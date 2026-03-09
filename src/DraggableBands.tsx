@@ -5,7 +5,9 @@ import { wrapHour } from "./time";
 import type { DraggableBandsProps } from "./types";
 import ZoneRow from "./ZoneRow";
 
-const VISIBLE_HOURS = 25;
+const MAX_VISIBLE_HOURS = 24;
+const MIN_VISIBLE_HOURS = 8;
+const TARGET_CELL_WIDTH = 40;
 const TOTAL_CELLS = 72;
 
 function DiffRow({ timeDiff }: { timeDiff: number }) {
@@ -14,10 +16,12 @@ function DiffRow({ timeDiff }: { timeDiff: number }) {
     timeDiff === 0 ? "Same time" : `${diffAbs}h ${timeDiff > 0 ? "ahead" : "behind"}`;
 
   return (
-    <div className="flex items-center justify-center gap-3 py-[3px] border-y border-y-white/3 bg-bg-primary/20">
-      <span className="text-xs uppercase tracking-wide text-text-secondary/30">Difference</span>
-      <div className="w-5 h-px bg-zone-a/15" />
-      <span className="text-sm font-medium text-text-primary">{diffLabel}</span>
+    <div className="flex items-center justify-center gap-2 sm:gap-3 py-[3px] border-y border-y-white/3 bg-bg-primary/20">
+      <span className="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary/30">
+        Difference
+      </span>
+      <div className="w-3 sm:w-5 h-px bg-zone-a/15" />
+      <span className="text-xs sm:text-sm font-medium text-text-primary">{diffLabel}</span>
     </div>
   );
 }
@@ -72,7 +76,11 @@ export default function DraggableBands({
     return () => ro.disconnect();
   }, []);
 
-  const cellW = containerWidth / VISIBLE_HOURS;
+  const visibleHours = Math.max(
+    MIN_VISIBLE_HOURS,
+    Math.min(MAX_VISIBLE_HOURS, Math.floor(containerWidth / TARGET_CELL_WIDTH)),
+  );
+  const cellW = containerWidth / visibleHours;
   const stripWidth = TOTAL_CELLS * cellW;
 
   const txA = getTranslateX(tzATime, containerWidth, cellW);
@@ -91,7 +99,7 @@ export default function DraggableBands({
     const dx = e.clientX - dragStartX.current;
     dragStartX.current = e.clientX;
     totalDragDx.current += dx;
-    const deltaHours = -dx * (VISIBLE_HOURS / containerWidth);
+    const deltaHours = -dx * (visibleHours / containerWidth);
     onTimeChange(deltaHours);
   }
 
@@ -171,7 +179,7 @@ export default function DraggableBands({
       </div>
 
       <p
-        className={`mt-2 text-center text-xs tracking-tight ${
+        className={`mt-1.5 sm:mt-2 text-center text-[10px] sm:text-xs tracking-tight ${
           dragging ? "text-zone-a/50" : "text-text-secondary/30"
         }`}
       >

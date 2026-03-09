@@ -8,7 +8,7 @@ export default function HourCell({ hour, cellW, color, currentHour }: HourCellPr
   if (isCurrentHour) {
     return (
       <div
-        className="h-12 shrink-0 flex items-center justify-center border-r border-r-white/4 text-sm font-bold text-text-inverse select-none"
+        className="h-10 sm:h-12 shrink-0 flex items-center justify-center border-r border-r-white/4 text-xs sm:text-sm font-bold text-text-inverse select-none"
         style={{ width: cellW, background: `${color}bb` }}
       >
         {formatTime(currentHour)}
@@ -27,7 +27,7 @@ export default function HourCell({ hour, cellW, color, currentHour }: HourCellPr
 
   return (
     <div
-      className={`h-12 shrink-0 flex items-center justify-center border-r border-r-white/4 text-xs text-text-secondary/45 select-none ${bgClass}`}
+      className={`h-10 sm:h-12 shrink-0 flex items-center justify-center border-r border-r-white/4 text-[10px] sm:text-xs text-text-secondary/45 select-none ${bgClass}`}
       style={{ width: cellW }}
     >
       {String(Math.floor(wrappedHour))}

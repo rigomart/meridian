@@ -150,13 +150,13 @@ export default function TimezoneExplorer() {
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between px-5 py-2 border-b border-b-zone-a/8">
-        <div className="flex items-center gap-4">
+      <header className="flex items-center justify-between px-3 sm:px-5 py-2 border-b border-b-zone-a/8">
+        <div className="flex items-center gap-2 sm:gap-4">
           <MeridianLogo />
-          <h1 className="font-serif text-2xl font-light leading-none text-text-primary">
+          <h1 className="font-serif text-xl sm:text-2xl font-light leading-none text-text-primary">
             Meridian
           </h1>
-          <span className="text-xs text-text-secondary/30">Timezone Explorer</span>
+          <span className="hidden sm:inline text-xs text-text-secondary/30">Timezone Explorer</span>
         </div>
         <div className="flex items-center gap-3">
           <CopyUrlButton />
@@ -171,9 +171,9 @@ export default function TimezoneExplorer() {
         </div>
       </header>
 
-      <div className="pt-4">
-        <p className="text-xs text-text-secondary/25 text-center mb-1.5">
-          Drag zones on map · Drag bands to shift time
+      <div className="pt-2 sm:pt-4">
+        <p className="text-[10px] sm:text-xs text-text-secondary/25 text-center mb-1.5">
+          Drag bands to shift time
           {!isLive && (
             <button
               type="button"

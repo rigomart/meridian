@@ -74,7 +74,7 @@ export default function TimezoneCombobox({ value, onValueChange, color }: Timezo
       autoHighlight
     >
       <Combobox.Trigger
-        className="flex h-6 min-w-40 max-w-52 items-center justify-between gap-2 rounded-md border border-white/8 bg-bg-primary/80 pr-2.5 pl-3 text-xs select-none hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-zone-a/60 data-[popup-open]:bg-white/5 cursor-default"
+        className="flex h-6 min-w-28 sm:min-w-40 max-w-44 sm:max-w-52 items-center justify-between gap-1.5 sm:gap-2 rounded-md border border-white/8 bg-bg-primary/80 pr-2 sm:pr-2.5 pl-2 sm:pl-3 text-[11px] sm:text-xs select-none hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-zone-a/60 data-[popup-open]:bg-white/5 cursor-default"
         style={{ color }}
       >
         <Combobox.Value placeholder={<span className="opacity-50">Select timezone</span>} />
@@ -140,4 +140,3 @@ function ChevronUpDownIcon() {
     </svg>
   );
 }
-

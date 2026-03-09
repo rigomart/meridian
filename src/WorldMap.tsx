@@ -159,7 +159,7 @@ export default function WorldMap({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-5">
+    <div className="mx-auto max-w-7xl px-2 sm:px-5">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT + LABEL_ROW_HEIGHT}`}
