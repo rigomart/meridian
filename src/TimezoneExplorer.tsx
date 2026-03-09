@@ -156,9 +156,7 @@ export default function TimezoneExplorer() {
           <h1 className="font-serif text-2xl font-light leading-none text-text-primary">
             Meridian
           </h1>
-          <span className="text-xs text-text-secondary/30">
-            Timezone Explorer
-          </span>
+          <span className="text-xs text-text-secondary/30">Timezone Explorer</span>
         </div>
         <div className="flex items-center gap-3">
           <CopyUrlButton />
