@@ -31,6 +31,10 @@ export function formatTime(fractionalHour: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
+export function formatHour(fractionalHour: number): string {
+  return String(Math.floor(wrapHour(fractionalHour)));
+}
+
 export function getAmPm(fractionalHour: number): string {
   const h = Math.floor(wrapHour(fractionalHour));
   return h >= 12 ? "PM" : "AM";

@@ -3,28 +3,11 @@ import { COLORS } from "./constants";
 import HourCell from "./HourCell";
 import { wrapHour } from "./time";
 import type { DraggableBandsProps } from "./types";
-import ZoneRow from "./ZoneRow";
 
 const MAX_VISIBLE_HOURS = 24;
 const MIN_VISIBLE_HOURS = 8;
 const TARGET_CELL_WIDTH = 40;
 const TOTAL_CELLS = 72;
-
-function DiffRow({ timeDiff }: { timeDiff: number }) {
-  const diffAbs = Math.abs(timeDiff);
-  const diffLabel =
-    timeDiff === 0 ? "Same time" : `${diffAbs}h ${timeDiff > 0 ? "ahead" : "behind"}`;
-
-  return (
-    <div className="flex items-center justify-center gap-2 sm:gap-3 py-[3px] border-y border-y-white/3 bg-bg-primary/20">
-      <span className="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary/30">
-        Difference
-      </span>
-      <div className="w-3 sm:w-5 h-px bg-zone-a/15" />
-      <span className="text-xs sm:text-sm font-medium text-text-primary">{diffLabel}</span>
-    </div>
-  );
-}
 
 function buildCells(time: number, cellW: number, color: string) {
   const cells = [];
@@ -42,18 +25,7 @@ function getTranslateX(time: number, containerWidth: number, cellW: number): num
   return containerWidth / 2 - (intHour + 24) * cellW - cellW * frac;
 }
 
-export default function DraggableBands({
-  tzATime,
-  tzBTime,
-  onTimeChange,
-  tz1Offset,
-  tz2Offset,
-  tz1Name,
-  tz2Name,
-  refZone,
-  onSetRef,
-  onTimezoneChange,
-}: DraggableBandsProps) {
+export default function DraggableBands({ tzATime, tzBTime, onTimeChange }: DraggableBandsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800);
   const [dragging, setDragging] = useState(false);
@@ -61,8 +33,6 @@ export default function DraggableBands({
   const dragStartX = useRef(0);
   const isDragging = useRef(false);
   const totalDragDx = useRef(0);
-
-  const timeDiff = tz2Offset - tz1Offset;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -119,28 +89,24 @@ export default function DraggableBands({
   }
 
   return (
-    <div>
+    <div className="px-4 sm:px-6">
       <div
         ref={containerRef}
-        className={`relative overflow-hidden bg-bg-primary/30 touch-none select-none border-y ${
-          dragging ? "cursor-grabbing border-y-zone-a/15" : "cursor-grab border-y-white/4"
+        className={`relative overflow-hidden touch-none select-none rounded-lg border bg-white/[0.02] ${
+          dragging ? "cursor-grabbing border-white/12" : "cursor-grab border-white/6"
         }`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        <ZoneRow
-          label="A"
-          color={COLORS.zoneA}
-          tzName={tz1Name}
-          time={tzATime}
-          isRef={refZone === "A"}
-          onSetRef={() => onSetRef("A")}
-          onTimezoneChange={(name) => onTimezoneChange("A", name)}
-          position="top"
-        />
-
-        <div className="overflow-hidden">
+        {/* Zone A strip */}
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center size-5 rounded text-[10px] font-bold text-white pointer-events-none"
+            style={{ background: COLORS.zoneA, boxShadow: `0 0 8px ${COLORS.zoneA}33` }}
+          >
+            A
+          </div>
           <div
             className="flex will-change-transform"
             style={{ width: stripWidth, transform: `translateX(${txA}px)` }}
@@ -149,9 +115,17 @@ export default function DraggableBands({
           </div>
         </div>
 
-        <DiffRow timeDiff={timeDiff} />
+        {/* Separator */}
+        <div className="h-px bg-white/5" />
 
-        <div className="overflow-hidden">
+        {/* Zone B strip */}
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center size-5 rounded text-[10px] font-bold text-white pointer-events-none"
+            style={{ background: COLORS.zoneB, boxShadow: `0 0 8px ${COLORS.zoneB}33` }}
+          >
+            B
+          </div>
           <div
             className="flex will-change-transform"
             style={{ width: stripWidth, transform: `translateX(${txB}px)` }}
@@ -160,30 +134,20 @@ export default function DraggableBands({
           </div>
         </div>
 
-        <ZoneRow
-          label="B"
-          color={COLORS.zoneB}
-          tzName={tz2Name}
-          time={tzBTime}
-          isRef={refZone === "B"}
-          onSetRef={() => onSetRef("B")}
-          onTimezoneChange={(name) => onTimezoneChange("B", name)}
-          position="bottom"
-        />
-
+        {/* Center indicator */}
         <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 flex flex-col items-center pointer-events-none z-10">
-          <div className="size-3 bg-zone-a rounded-[2px] rotate-45 shadow-glow shrink-0" />
-          <div className="w-0.5 flex-1 bg-zone-a shadow-glow-sm" />
-          <div className="size-3 bg-zone-a rounded-[2px] rotate-45 shadow-glow shrink-0" />
+          <div className="size-1.5 rounded-full bg-white shadow-glow-sm shrink-0" />
+          <div className="w-px flex-1 bg-white/25" />
+          <div className="size-1.5 rounded-full bg-white shadow-glow-sm shrink-0" />
         </div>
       </div>
 
       <p
-        className={`mt-1.5 sm:mt-2 text-center text-[10px] sm:text-xs tracking-tight ${
-          dragging ? "text-zone-a/50" : "text-text-secondary/30"
+        className={`mt-2 text-center text-[10px] sm:text-xs ${
+          dragging ? "text-text-secondary/50" : "text-text-secondary/25"
         }`}
       >
-        {dragging ? "Shifting..." : "Click or drag anywhere on the bands"}
+        {dragging ? "Shifting..." : "Drag to shift time"}
       </p>
     </div>
   );

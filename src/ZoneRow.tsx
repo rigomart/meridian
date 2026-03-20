@@ -45,9 +45,9 @@ export default function ZoneRow({
         onClick={onSetRef}
         className="text-[10px] sm:text-xs uppercase tracking-normal px-1.5 sm:px-1.75 py-0.5 rounded-[3px] cursor-pointer whitespace-nowrap shrink-0"
         style={{
-          border: `1px solid ${isRef ? `${color}55` : "rgba(255,255,255,0.06)"}`,
+          border: `1px solid ${isRef ? `${color}55` : "rgba(255,255,255,0.08)"}`,
           background: isRef ? `${color}22` : "transparent",
-          color: isRef ? color : "rgba(200,205,216,0.35)",
+          color: isRef ? color : "rgba(161,161,170,0.5)",
         }}
       >
         {isRef ? "\u2726 Ref" : "Ref"}
@@ -59,7 +59,7 @@ export default function ZoneRow({
         className="text-sm sm:text-base font-semibold whitespace-nowrap shrink-0"
         style={{ color }}
       >
-        {timeStr} <span className="text-[10px] sm:text-xs opacity-50">{ampm}</span>{" "}
+        {timeStr} <span className="text-[10px] sm:text-xs opacity-40">{ampm}</span>{" "}
         <span className="text-[10px] sm:text-xs">{icon}</span>
       </span>
     </div>

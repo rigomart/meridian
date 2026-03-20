@@ -2,7 +2,7 @@ import { type GeoPermissibleObjects, geoEquirectangular, geoGraticule, geoPath }
 import { useRef } from "react";
 import { COLORS, MAP_HEIGHT, MAP_WIDTH } from "./constants";
 import { buildBandPolygon, getBandFill } from "./geo";
-import { formatTime, wrapHour } from "./time";
+import { formatHour, getAmPm, wrapHour } from "./time";
 import { OFFSET_CITY_MAP } from "./timezones";
 import type { WorldMapProps } from "./types";
 
@@ -137,7 +137,7 @@ export default function WorldMap({
 
   if (loading || !geoData) {
     return (
-      <div className="mx-auto flex items-center justify-center max-w-5xl h-120 bg-bg-primary/60 rounded-lg border border-zone-a/6 text-text-secondary/40 text-sm tracking-normal">
+      <div className="flex items-center justify-center h-60 sm:h-80 lg:h-120 bg-bg-primary/60 rounded-lg border border-white/6 text-text-secondary/40 text-sm">
         LOADING MAP DATA...
       </div>
     );
@@ -159,16 +159,16 @@ export default function WorldMap({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-2 sm:px-5">
+    <div>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT + LABEL_ROW_HEIGHT}`}
-        className="w-full h-auto rounded-lg border border-zone-a/6 bg-bg-primary/60"
+        className="w-full h-auto rounded-lg border border-white/6 bg-bg-primary/80"
       >
         <title>Timezone world map</title>
         <defs>
           <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,183,77,0.03)" />
+            <stop offset="0%" stopColor="rgba(255,255,255,0.02)" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <filter id="glow">
@@ -181,7 +181,7 @@ export default function WorldMap({
         </defs>
 
         <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#mapGlow)" />
-        <path d={spherePath} fill="none" stroke="rgba(255,183,77,0.12)" strokeWidth={1} />
+        <path d={spherePath} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
         <path d={graticulePath} fill="none" stroke={`${COLORS.geo}10`} strokeWidth={0.5} />
 
         {bandData.map(({ offset, d }) => {
@@ -230,7 +230,7 @@ export default function WorldMap({
         <path
           d={equatorPath}
           fill="none"
-          stroke="rgba(255,183,77,0.1)"
+          stroke="rgba(255,255,255,0.06)"
           strokeWidth={1}
           strokeDasharray="4,4"
           className="pointer-events-none"
@@ -265,13 +265,13 @@ export default function WorldMap({
             textAnchor="middle"
             fill={COLORS.textSecondary}
             opacity={offset === 0 ? 0.5 : 0.25}
-            className="text-xs pointer-events-none"
+            className="text-xs font-mono pointer-events-none"
           >
             {label}
           </text>
         ))}
       </svg>
-      <p className="mt-1.5 text-center text-[10px] tracking-wide text-text-secondary/20">
+      <p className="mt-1.5 text-center text-[10px] tracking-normal text-text-secondary/20">
         Approximate zones — actual timezone boundaries differ from these meridian-based bands
       </p>
     </div>
@@ -289,8 +289,9 @@ function BandTooltip({
 }) {
   const city = OFFSET_CITY_MAP[offset] ?? `UTC${offset >= 0 ? "+" : ""}${offset}`;
   const localTime = wrapHour(refTime + (offset - refOffset));
-  const timeStr = formatTime(localTime);
-  const tooltipText = `${city} \u00b7 ${timeStr}`;
+  const hourStr = formatHour(localTime);
+  const ampm = getAmPm(localTime);
+  const tooltipText = `${city} \u00b7 ${hourStr} ${ampm}`;
   const centerLon = offset * 15;
   const pt = projection([centerLon, -60]);
   if (!pt) return null;
@@ -304,7 +305,7 @@ function BandTooltip({
         height={24}
         rx={6}
         fill={COLORS.tooltipBg}
-        stroke="rgba(255,255,255,0.15)"
+        stroke="rgba(255,255,255,0.1)"
         strokeWidth={0.5}
       />
       <text
@@ -312,7 +313,7 @@ function BandTooltip({
         y={pt[1] + 4}
         textAnchor="middle"
         fill={COLORS.textPrimary}
-        className="text-xs"
+        className="text-xs font-mono"
       >
         {tooltipText}
       </text>

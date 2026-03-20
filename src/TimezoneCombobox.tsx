@@ -74,7 +74,7 @@ export default function TimezoneCombobox({ value, onValueChange, color }: Timezo
       autoHighlight
     >
       <Combobox.Trigger
-        className="flex h-6 min-w-28 sm:min-w-40 max-w-44 sm:max-w-52 items-center justify-between gap-1.5 sm:gap-2 rounded-md border border-white/8 bg-bg-primary/80 pr-2 sm:pr-2.5 pl-2 sm:pl-3 text-[11px] sm:text-xs select-none hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-zone-a/60 data-[popup-open]:bg-white/5 cursor-default"
+        className="flex h-6 min-w-28 sm:min-w-40 max-w-44 sm:max-w-52 items-center justify-between gap-1.5 sm:gap-2 rounded-md border border-white/10 bg-white/3 pr-2 sm:pr-2.5 pl-2 sm:pl-3 text-[11px] sm:text-xs select-none hover:bg-white/6 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-zone-a/60 data-[popup-open]:bg-white/6 cursor-default"
         style={{ color }}
       >
         <Combobox.Value placeholder={<span className="opacity-50">Select timezone</span>} />
@@ -85,13 +85,13 @@ export default function TimezoneCombobox({ value, onValueChange, color }: Timezo
       <Combobox.Portal>
         <Combobox.Positioner align="start" sideOffset={4}>
           <Combobox.Popup
-            className="[--input-container-height:2.25rem] origin-[var(--transform-origin)] max-w-[var(--available-width)] max-h-80 rounded-md bg-bg-primary shadow-lg text-text-primary outline outline-1 outline-white/10 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0"
+            className="[--input-container-height:2.25rem] origin-[var(--transform-origin)] max-w-[var(--available-width)] max-h-80 rounded-md bg-[#111218]/95 backdrop-blur-xl shadow-lg text-text-primary outline outline-1 outline-white/8 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0"
             aria-label="Select timezone"
           >
             <div className="w-70 h-[var(--input-container-height)] p-1.5">
               <Combobox.Input
                 placeholder="e.g. New York, PST, Asia/Tokyo"
-                className="h-full w-full font-normal rounded border border-white/10 bg-bg-secondary px-2.5 text-xs text-text-primary focus:outline focus:outline-2 focus:-outline-offset-1 focus:outline-zone-a/60"
+                className="h-full w-full font-normal rounded border border-white/8 bg-white/5 px-2.5 text-xs text-text-primary focus:outline focus:outline-2 focus:-outline-offset-1 focus:outline-zone-a/60"
               />
             </div>
             <Combobox.Empty className="px-3 py-2 text-xs text-text-secondary/50 empty:m-0 empty:p-0">
@@ -106,7 +106,7 @@ export default function TimezoneCombobox({ value, onValueChange, color }: Timezo
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-xs leading-4">{tz.mainCities[0] ?? tz.name}</span>
-                    <span className="text-[10px] opacity-40 tabular-nums">
+                    <span className="text-[10px] opacity-40 font-mono">
                       UTC{formatOffsetStr(getOffsetHours(tz))}
                     </span>
                   </div>
